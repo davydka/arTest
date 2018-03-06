@@ -84,9 +84,12 @@
 		var BOX_QUANTITY = 6;
 		var boxesAdded = false;
 
+		let model;
+
 		var loader = new THREE.GLTFLoader();
 		loader.load( 'shoe2.gltf', function ( gltf ) {
 			let cam = gltf.cameras[0];
+			model = gltf;
 
 			/**
 			 * Use the `getARDisplay()` utility to leverage the WebVR API
@@ -187,7 +190,7 @@
 				var material = new THREE.MeshNormalMaterial();
 				var cube = new THREE.Mesh(geometry, material);
 				cube.position.set(Math.cos(angle) * BOX_DISTANCE, camera.position.y - 0.25, Math.sin(angle) * BOX_DISTANCE);
-				scene.add(cube);
+				scene.add(model.scene);
 			}
 			// Flip this switch so that we only perform this once
 			boxesAdded = true;
