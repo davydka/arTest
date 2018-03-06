@@ -187,7 +187,7 @@
 				var material = new THREE.MeshNormalMaterial();
 				var cube = new THREE.Mesh(geometry, material);
 				cube.position.set(Math.cos(angle) * BOX_DISTANCE, camera.position.y - 0.25, Math.sin(angle) * BOX_DISTANCE);
-				scene.add(gltf.scene);
+				scene.add(cube);
 			}
 			// Flip this switch so that we only perform this once
 			boxesAdded = true;
