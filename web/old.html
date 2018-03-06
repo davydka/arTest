@@ -20,6 +20,7 @@
 
 		<script src="js/controls/OrbitControls.js"></script>
 		<script src="js/loaders/GLTFLoader.js"></script>
+		<script src="js/loaders/ColladaLoader.js"></script>
 
 		<script src="js/Detector.js"></script>
 		<script src="js/libs/stats.min.js"></script>
@@ -44,11 +45,21 @@
 
 				// model
 				var loader = new THREE.GLTFLoader();
-				// loader.load( '/bin/data/shoe2.gltf', function ( gltf ) {
+				// var loader = new THREE.ColladaLoader();
 				loader.load( 'shoe2.gltf', function ( gltf ) {
+				// loader.load( 'giggy.gltf', function ( gltf ) {
+				// loader.load( 'GiggyRun_160311a.dae', function ( gltf ) {
 
 					console.log(gltf);
-					const cam = gltf.cameras[0];
+
+					let cam = new THREE.Object3D();
+					cam.parent = new THREE.Object3D();
+					cam.parent.position.set(0,-3.5,0);
+					cam.rotation.set(90,0,0);
+					if(gltf.cameras) {
+						console.log('yea');
+						cam = gltf.cameras[0];
+					}
 					// console.log(cam);
 
 					var sphereSize = 1;
@@ -120,7 +131,7 @@
 
 					mixer = new THREE.AnimationMixer(gltf.scene);
 
-					scene.add( gscene );
+					scene.add( gltf.scene );
 					mixer.clipAction(gltf.animations[0]).play();
 					animate();
 					

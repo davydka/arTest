@@ -74,6 +74,8 @@
 	<script src="js/three.js"></script>
 	<script src="js/controls/VRControls.js"></script>
 	<script src="js/three.ar.js"></script>
+	<script src="js/loaders/GLTFLoader.js"></script>
+	<script src="js/loaders/ColladaLoader.js"></script>
 	<script>
 		var vrDisplay, vrControls, arView;
 		var canvas, camera, scene, renderer;
@@ -81,20 +83,26 @@
 		var BOX_SIZE = 0.25;
 		var BOX_QUANTITY = 6;
 		var boxesAdded = false;
-		/**
-		 * Use the `getARDisplay()` utility to leverage the WebVR API
-		 * to see if there are any AR-capable WebVR VRDisplays. Returns
-		 * a valid display if found. Otherwise, display the unsupported
-		 * browser message.
-		 */
-		THREE.ARUtils.getARDisplay().then(function (display) {
-			if (display) {
-				vrDisplay = display;
-				init();
-			} else {
-				THREE.ARUtils.displayUnsupportedMessage();
-			}
-		});
+
+		var loader = new THREE.GLTFLoader();
+		loader.load( 'shoe2.gltf', function ( gltf ) {
+			let cam = gltf.cameras[0];
+
+			/**
+			 * Use the `getARDisplay()` utility to leverage the WebVR API
+			 * to see if there are any AR-capable WebVR VRDisplays. Returns
+			 * a valid display if found. Otherwise, display the unsupported
+			 * browser message.
+			 */
+			THREE.ARUtils.getARDisplay().then(function (display) {
+				if (display) {
+					vrDisplay = display;
+					init();
+				} else {
+					THREE.ARUtils.displayUnsupportedMessage();
+				}
+			});
+		}
 		function init() {
 			// Setup the three.js rendering environment
 			renderer = new THREE.WebGLRenderer({ alpha: true });
@@ -179,7 +187,7 @@
 				var material = new THREE.MeshNormalMaterial();
 				var cube = new THREE.Mesh(geometry, material);
 				cube.position.set(Math.cos(angle) * BOX_DISTANCE, camera.position.y - 0.25, Math.sin(angle) * BOX_DISTANCE);
-				scene.add(cube);
+				scene.add(gltf.scene);
 			}
 			// Flip this switch so that we only perform this once
 			boxesAdded = true;
