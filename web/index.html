@@ -90,6 +90,7 @@
 		loader.load( 'shoe2.gltf', function ( gltf ) {
 			let cam = gltf.cameras[0];
 			model = gltf;
+			console.log(gltf);
 			console.log('d');
 
 			/**
@@ -144,7 +145,7 @@
 			directionalLight = new THREE.DirectionalLight();
 			// @TODO in the future, use AR light estimation
 			directionalLight.intensity = 0.3;
-			directionalLight.position.set(10, 15, 10);
+			directionalLight.position.set(5, 3, -10);
 			// We want this light to cast shadow
 			directionalLight.castShadow = true;
 			light = new THREE.AmbientLight();
