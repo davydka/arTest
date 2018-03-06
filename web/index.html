@@ -140,6 +140,17 @@
 			canvas = renderer.domElement;
 			document.body.appendChild(canvas);
 			scene = new THREE.Scene();
+
+			directionalLight = new THREE.DirectionalLight();
+			// @TODO in the future, use AR light estimation
+			directionalLight.intensity = 0.3;
+			directionalLight.position.set(10, 15, 10);
+			// We want this light to cast shadow
+			directionalLight.castShadow = true;
+			light = new THREE.AmbientLight();
+			scene.add(light);
+			scene.add(directionalLight);
+
 			// Creating the ARView, which is the object that handles
 			// the rendering of the camera stream behind the three.js
 			// scene
