@@ -73,6 +73,7 @@
 	</div>
 	<script src="js/three.js"></script>
 	<script src="js/controls/VRControls.js"></script>
+	<script src="js/controls/OrbitControls.js"></script>
 	<script src="js/three.ar.js"></script>
 	<script src="js/loaders/GLTFLoader.js"></script>
 	<script src="js/loaders/ColladaLoader.js"></script>
@@ -84,11 +85,11 @@
 		var BOX_QUANTITY = 6;
 		var boxesAdded = false;
 
-		let model;
+		let model, arYes, cam;
 
 		var loader = new THREE.GLTFLoader();
 		loader.load( 'shoe2.gltf', function ( gltf ) {
-			let cam = gltf.cameras[0];
+			cam = gltf.cameras[0];
 			model = gltf;
 			console.log(gltf);
 			console.log('d');
@@ -101,10 +102,13 @@
 			 */
 			THREE.ARUtils.getARDisplay().then(function (display) {
 				if (display) {
+					arYes = true;
 					vrDisplay = display;
 					init();
 				} else {
-					THREE.ARUtils.displayUnsupportedMessage();
+					arYes = false;
+					init();
+					// THREE.ARUtils.displayUnsupportedMessage();
 				}
 			});
 		});
@@ -129,6 +133,7 @@
 			boxesAdded = true;
 
 			model.scene.position.set(0, 0, -2.5);
+			model.scene.rotation.set(0, 90, 0);
 			scene.add(model.scene);
 		}
 
@@ -138,9 +143,11 @@
 			renderer.setPixelRatio(window.devicePixelRatio);
 			renderer.setSize(window.innerWidth, window.innerHeight);
 			renderer.autoClear = false;
+			renderer.gammaOutput = true;
 			canvas = renderer.domElement;
 			document.body.appendChild(canvas);
 			scene = new THREE.Scene();
+			scene.background = new THREE.Color( 0xf0f000 );
 
 			directionalLight = new THREE.DirectionalLight();
 			// @TODO in the future, use AR light estimation
@@ -155,23 +162,47 @@
 			// Creating the ARView, which is the object that handles
 			// the rendering of the camera stream behind the three.js
 			// scene
-			arView = new THREE.ARView(vrDisplay, renderer);
+			if(arYes) {
+				arView = new THREE.ARView(vrDisplay, renderer);
+			}
 			// The ARPerspectiveCamera is very similar to THREE.PerspectiveCamera,
 			// except when using an AR-capable browser, the camera uses
 			// the projection matrix provided from the device, so that the
 			// perspective camera's depth planes and field of view matches
 			// the physical camera on the device.
-			camera = new THREE.ARPerspectiveCamera(
-				vrDisplay,
-				60,
-				window.innerWidth / window.innerHeight,
-				vrDisplay.depthNear,
-				vrDisplay.depthFar
-			);
-			// VRControls is a utility from three.js that applies the device's
-			// orientation/position to the perspective camera, keeping our
-			// real world and virtual world in sync.
-			vrControls = new THREE.VRControls(camera);
+			if(arYes) {
+				camera = new THREE.ARPerspectiveCamera(
+					vrDisplay,
+					60,
+					window.innerWidth / window.innerHeight,
+					vrDisplay.depthNear,
+					vrDisplay.depthFar
+				);
+				// VRControls is a utility from three.js that applies the device's
+				// orientation/position to the perspective camera, keeping our
+				// real world and virtual world in sync.
+				vrControls = new THREE.VRControls(camera);
+			} else {
+				camera = new THREE.PerspectiveCamera(
+					cam.fov,
+					window.innerWidth / window.innerHeight,
+					cam.near,
+					cam.far
+				);
+				/*
+				camera.position.set(
+					cam.parent.position.x,
+					cam.parent.position.y,
+					cam.parent.position.z
+				);
+				*/
+				vrControls = new THREE.OrbitControls(camera);
+				// vrControls.target.set( 0, -0.2, -0.2 );
+				vrControls.update();
+				console.log(vrControls);
+				camera.updateProjectionMatrix();
+			}
+
 			// Bind our event handlers
 			window.addEventListener('resize', onWindowResize, false);
 			// Kick off the render loop!
@@ -186,7 +217,9 @@
 			renderer.clearColor();
 			// Render the device's camera stream on screen first of all.
 			// It allows to get the right pose synchronized with the right frame.
-			arView.render();
+			if(arYes){
+				arView.render();
+			}
 			// Update our camera projection matrix in the event that
 			// the near or far planes have updated
 			camera.updateProjectionMatrix();
@@ -203,7 +236,11 @@
 			renderer.render(scene, camera);
 			// Kick off the requestAnimationFrame to call this function
 			// when a new VRDisplay frame is rendered
-			vrDisplay.requestAnimationFrame(update);
+			if(arYes) {
+				vrDisplay.requestAnimationFrame(update);
+			} else {
+				requestAnimationFrame(update);
+			}
 		}
 		/**
 		 * On window resize, update the perspective camera's aspect ratio,
