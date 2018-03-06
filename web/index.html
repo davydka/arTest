@@ -90,7 +90,7 @@
 		loader.load( 'shoe2.gltf', function ( gltf ) {
 			let cam = gltf.cameras[0];
 			model = gltf;
-			console.log('e');
+			console.log('d');
 
 			/**
 			 * Use the `getARDisplay()` utility to leverage the WebVR API
@@ -127,7 +127,7 @@
 			// Flip this switch so that we only perform this once
 			boxesAdded = true;
 
-			model.scene.position.set(0, 2.5, 0);
+			model.scene.position.set(0, 0, 2.5);
 			scene.add(model.scene);
 		}
 
