@@ -85,7 +85,8 @@
 		var BOX_QUANTITY = 6;
 		var boxesAdded = false;
 
-		let model, arYes, cam;
+		let model, arYes, cam, mixer;
+		var clock = new THREE.Clock();
 
 		var loader = new THREE.GLTFLoader();
 		loader.load( 'shoe2.gltf', function ( gltf ) {
@@ -134,7 +135,9 @@
 
 			model.scene.position.set(0, 0, -2.5);
 			model.scene.rotation.set(0, 90, 0);
+			mixer = new THREE.AnimationMixer(model.scene);
 			scene.add(model.scene);
+			mixer.clipAction(model.animations[0]).play();
 		}
 
 		function init() {
@@ -241,6 +244,7 @@
 			} else {
 				requestAnimationFrame(update);
 			}
+			mixer.update(clock.getDelta());
 		}
 		/**
 		 * On window resize, update the perspective camera's aspect ratio,
