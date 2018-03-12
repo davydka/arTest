@@ -125,6 +125,7 @@
 		var loader = new THREE.ColladaLoader();
 		loader.load("./Running.dae", function(collada) {
 			model = collada;
+			model.scene.scale.set(.005,.005,.005);
 			console.log(model);
 
 			var animations = model.animations;
