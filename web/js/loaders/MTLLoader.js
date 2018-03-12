@@ -110,6 +110,7 @@ THREE.MTLLoader.prototype = {
 	 */
 	parse: function ( text ) {
 
+		console.log(text);
 		var lines = text.split( '\n' );
 		var info = {};
 		var delimiter_pattern = /\s+/;
