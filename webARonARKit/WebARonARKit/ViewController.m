@@ -385,8 +385,8 @@ const float CAMERA_FRAME_JPEG_COMPRESSION_FACTOR = 0.5;
                    context:NULL];
 
     // Load the default website.
-    NSString *defaultSite =
-        @"https://davydka.github.io/arTest/web/";
+    // NSString *defaultSite = @"https://davydka.github.io/arTest/web/";
+    NSString *defaultSite = @"https://42a7ae1a.ngrok.io";
     NSURL *url = [NSURL URLWithString:defaultSite];
     [wkWebView loadRequest:[NSURLRequest requestWithURL:url]];
     [urlTextField setText:url.absoluteString];
@@ -896,11 +896,11 @@ const float CAMERA_FRAME_JPEG_COMPRESSION_FACTOR = 0.5;
      evaluateJavaScript:jsCode
      completionHandler:^(id data, NSError *error) {
          if (error) {
-             [self showAlertDialog:
-              [NSString stringWithFormat:@"ERROR: Evaluating jscode: %@",
-               error]
-                 completionHandler:^{
-                 }];
+//             [self showAlertDialog:
+//              [NSString stringWithFormat:@"ERROR: Evaluating jscode: %@",
+//               error]
+//                 completionHandler:^{
+//                 }];
          }
      }];
 }
@@ -1055,9 +1055,9 @@ didRemoveAnchors:(nonnull NSArray<ARAnchor *> *)anchors {
      evaluateJavaScript:jsCode
      completionHandler:^(id data, NSError *error) {
        if (error) {
-         [self showAlertDialog:
-             [NSString stringWithFormat:@"ERROR: Evaluating jscode: %@", error]
-             completionHandler:^{ }];
+//         [self showAlertDialog:
+//             [NSString stringWithFormat:@"ERROR: Evaluating jscode: %@", error]
+//             completionHandler:^{ }];
          }
      }];
 

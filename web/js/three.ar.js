@@ -529,8 +529,10 @@ var ARPlanes = function (_Object3D) {
       try {
         for (var _iterator = event.planes[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
           var plane = _step.value;
-          _this.removePlane_(plane.identifier);
-          _this.addPlane_(plane);
+          if(plane) {
+            _this.removePlane_(plane.identifier);
+            _this.addPlane_(plane);
+          }
         }
       } catch (err) {
         _didIteratorError = true;
