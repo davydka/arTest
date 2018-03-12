@@ -95,6 +95,8 @@
 
 		// var loader = new THREE.GLTFLoader();
 		// loader.load( 'shoe2.gltf', function ( gltf ) {
+
+		/*
 		var loader = new THREE.OBJLoader2();
 		loader.getLogger().setDebug( true );
 		
@@ -116,6 +118,32 @@
 						init();
 					}
 				});
+			});
+		});
+		*/
+
+		var loader = new THREE.ColladaLoader();
+		loader.load("./Running.dae", function(collada) {
+			model = collada;
+			console.log(model);
+
+			var animations = model.animations;
+			var avatar = model.scene;
+
+			/*
+			mixer = new THREE.AnimationMixer( avatar );
+			var action = mixer.clipAction( animations[ 0 ] ).play();
+			scene.add( avatar );
+			*/
+			THREE.ARUtils.getARDisplay().then(function (display) {
+				if (display) {
+					arYes = true;
+					vrDisplay = display;
+					init();
+				} else {
+					arYes = false;
+					init();
+				}
 			});
 		});
 
@@ -172,6 +200,8 @@
 
 		function addModelObj() {
 			if(!arYes) {
+				modelAdded = true;
+
 				scene.add(model.detail.loaderRootNode);
 				return;
 			}
@@ -196,6 +226,40 @@
 			document.querySelector("#info").classList.add("hide");
 
 			scene.add(model.detail.loaderRootNode);
+		}
+
+		function addModelDae() {
+			if(!arYes) {
+				modelAdded = true;
+
+				mixer = new THREE.AnimationMixer(model.scene);
+				scene.add(model.scene);
+				mixer.clipAction(model.animations[0]).play();
+				return;
+			}
+
+			modelAdded = true;
+			
+			console.log("FOUND!!!!!!!!!!!!!!!!!");
+			console.log(model);
+
+			const plane = vrDisplay.getPlanes()[0];
+			const mm = plane.modelMatrix;
+			var matrix = new THREE.Matrix4();
+			var position = new THREE.Vector3();
+			matrix.fromArray(mm);
+			position.setFromMatrixPosition(matrix);
+			model.scene.position.set(
+				position.x,
+				position.y,
+				position.z
+			);
+
+			document.querySelector("#info").classList.add("hide");
+
+			mixer = new THREE.AnimationMixer(model.scene);
+			scene.add(model.scene);
+			mixer.clipAction(model.animations[0]).play();
 		}
 
 		function init() {
@@ -225,7 +289,8 @@
 					return;
 				}
 				if (!modelAdded && vrDisplay.getPlanes().length) {
-					addModelObj();
+					addModelDae();
+					// addModelObj();
 					// addModel();
 					// clearInterval(initTimer);
 				} else if(vrDisplay.getPlanes()[0]) {
@@ -281,7 +346,8 @@
 				var gridHelper = new THREE.GridHelper( 10, 10 );
 				scene.add( gridHelper );
 				// addModelDesktop();
-				addModelObj();
+				// addModelObj();
+				addModelDae();
 			}
 
 			window.addEventListener('resize', onWindowResize, false);
@@ -306,7 +372,7 @@
 				// addModel();
 			}
 			if(modelAdded) {
-				// mixer.update(clock.getDelta());
+				mixer.update(clock.getDelta());
 			}
 
 			renderer.clearDepth();
