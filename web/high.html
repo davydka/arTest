@@ -1,0 +1,329 @@
+<!--
+	/*
+	* Copyright 2017 Google Inc. All Rights Reserved.
+	* Licensed under the Apache License, Version 2.0 (the "License");
+	* you may not use this file except in compliance with the License.
+	* You may obtain a copy of the License at
+	*
+	*     http://www.apache.org/licenses/LICENSE-2.0
+	*
+	* Unless required by applicable law or agreed to in writing, software
+	* distributed under the License is distributed on an "AS IS" BASIS,
+	* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	* See the License for the specific language governing permissions and
+	* limitations under the License.
+	*/
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>three.ar.js - Boilerplate</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no,
+	minimum-scale=1.0, maximum-scale=1.0">
+	<style>
+		body {
+			font-family: monospace;
+			margin: 0;
+			overflow: hidden;
+			position: fixed;
+			width: 100%;
+			height: 100vh;
+			-webkit-user-select: none;
+			user-select: none;
+		}
+		#info {
+			position: absolute;
+			left: 50%;
+			bottom: 0;
+			transform: translate(-50%, 0);
+			margin: 1em;
+			z-index: 10;
+			line-height: 2em;
+			text-align: center;
+		}
+		#info * {
+			color: #fff;
+		}
+		.title {
+			background-color: rgba(40, 40, 40, 0.4);
+			padding: 0.4em 0.6em;
+			border-radius: 0.1em;
+		}
+		.links {
+			background-color: rgba(40, 40, 40, 0.6);
+			padding: 0.4em 0.6em;
+			border-radius: 0.1em;
+		}
+		canvas {
+			position: absolute;
+			top: 0;
+			left: 0;
+		}
+
+		.hide {
+			display: none;
+		}
+	</style>
+</head>
+<body>
+	<div id="info">
+		<span class="title">Move around to scan the surface to begin.</span>
+	</div>
+	<script src="js/three.js"></script>
+	<script src="js/controls/VRControls.js"></script>
+	<script src="js/controls/OrbitControls.js"></script>
+	<script src="js/three.ar.js"></script>
+	<script src="js/loaders/GLTFLoader.js"></script>
+	<script src="js/loaders/ColladaLoader.js"></script>
+
+	<script src="js/loaders/MTLLoader.js"></script>
+	<script src="js/loaders/LoaderSupport.js"></script>
+	<script src="js/loaders/OBJLoader2.js"></script>
+	<script>
+		var vrDisplay, vrControls, arView;
+		var canvas, camera, scene, renderer;
+		var BOX_DISTANCE = 1.5;
+		var BOX_SIZE = 0.25;
+		var BOX_QUANTITY = 6;
+		var modelAdded = false;
+
+		let model, arYes, cam, mixer;
+		var clock = new THREE.Clock();
+
+		let initTimer;
+
+		// var loader = new THREE.GLTFLoader();
+		// loader.load( 'shoe2.gltf', function ( gltf ) {
+		var loader = new THREE.OBJLoader2();
+		loader.getLogger().setDebug( true );
+		
+		loader.loadMtl("./Ten24_Sample_100k.mtl", null, function(materials){
+			loader.setModelName("Ten24_Sample_100k");
+			loader.setMaterials(materials);
+			loader.load( "./Ten24_Sample_100k.OBJ", function ( gltf ) {
+				// cam = gltf.cameras[0];
+				model = gltf;
+				console.log(gltf);
+
+				THREE.ARUtils.getARDisplay().then(function (display) {
+					if (display) {
+						arYes = true;
+						vrDisplay = display;
+						init();
+					} else {
+						arYes = false;
+						init();
+					}
+				});
+			});
+		});
+
+		function addModel () {
+			modelAdded = true;
+			
+			console.log("FOUND!!!!!!!!!!!!!!!!!");
+			console.log(model);
+
+			const plane = vrDisplay.getPlanes()[0];
+			const mm = plane.modelMatrix;
+			var matrix = new THREE.Matrix4();
+			var position = new THREE.Vector3();
+			matrix.fromArray(mm);
+			position.setFromMatrixPosition(matrix);
+			model.scene.children.map((item) => {
+				if(item.type === "Mesh") {
+					item.position.set(
+						position.x,
+						position.y,
+						position.z
+					);
+				}
+			});
+
+			document.querySelector("#info").classList.add("hide");
+
+			// model.scene.position.set(0, 0, -2.5);
+			// model.scene.rotation.set(0, 90, 0);
+			mixer = new THREE.AnimationMixer(model.scene);
+			scene.add(model.scene);
+			mixer.clipAction(model.animations[0]).play();
+		}
+
+		function addModelDesktop () {
+			modelAdded = true;
+			
+			model.scene.children.map((item) => {
+				if(item.type === "Mesh") {
+					item.position.set(
+						0,
+						0,
+						0
+					);
+				}
+			});
+
+			// mesh.position.set(0, 0, -2.5);
+			// mesh.rotation.set(90, 0, 0);
+			mixer = new THREE.AnimationMixer(model.scene);
+			scene.add(model.scene);
+			mixer.clipAction(model.animations[0]).play();
+		}
+
+		function addModelObj() {
+			if(!arYes) {
+				scene.add(model.detail.loaderRootNode);
+				return;
+			}
+
+			modelAdded = true;
+			
+			console.log("FOUND!!!!!!!!!!!!!!!!!");
+			console.log(model);
+
+			const plane = vrDisplay.getPlanes()[0];
+			const mm = plane.modelMatrix;
+			var matrix = new THREE.Matrix4();
+			var position = new THREE.Vector3();
+			matrix.fromArray(mm);
+			position.setFromMatrixPosition(matrix);
+			model.detail.loaderRootNode.position.set(
+				position.x,
+				position.y,
+				position.z
+			);
+
+			document.querySelector("#info").classList.add("hide");
+
+			scene.add(model.detail.loaderRootNode);
+		}
+
+		function init() {
+			renderer = new THREE.WebGLRenderer({ alpha: true });
+			renderer.setPixelRatio(window.devicePixelRatio);
+			renderer.setSize(window.innerWidth, window.innerHeight);
+			renderer.autoClear = false;
+			renderer.gammaOutput = true;
+			canvas = renderer.domElement;
+			document.body.appendChild(canvas);
+			scene = new THREE.Scene();
+
+			directionalLight = new THREE.DirectionalLight();
+			directionalLight.intensity = 0.35;
+			directionalLight.position.set(5, 3, -.5);
+			directionalLight.castShadow = true;
+			light = new THREE.AmbientLight();
+			scene.add(light);
+			scene.add(directionalLight);
+ 
+
+			var helper = new THREE.DirectionalLightHelper( directionalLight, 5 );
+			scene.add( helper );
+			
+			initTimer = setInterval(() => {
+				if(!arYes) {
+					return;
+				}
+				if (!modelAdded && vrDisplay.getPlanes().length) {
+					addModelObj();
+					// addModel();
+					// clearInterval(initTimer);
+				} else if(vrDisplay.getPlanes()[0]) {
+					console.log(vrDisplay.getPlanes()[0]);
+					const plane = vrDisplay.getPlanes()[0];
+					const mm = plane.modelMatrix;
+					var matrix = new THREE.Matrix4();
+					var position = new THREE.Vector3();
+					matrix.fromArray(mm);
+					position.setFromMatrixPosition(matrix);
+					console.log(position);
+				}
+			}, 500);
+			
+
+			// Creating the ARView, which is the object that handles
+			// the rendering of the camera stream behind the three.js
+			// scene
+			if(arYes) {
+				/*
+				var arDebug = new THREE.ARDebug(vrDisplay, scene, {
+					showLastHit: false,
+					showPoseStatus: true,
+					showPlanes: true
+				});
+				document.body.appendChild(arDebug.getElement());
+				*/
+
+				arView = new THREE.ARView(vrDisplay, renderer);
+			}
+			if(arYes) {
+				camera = new THREE.ARPerspectiveCamera(
+					vrDisplay,
+					60,
+					window.innerWidth / window.innerHeight,
+					vrDisplay.depthNear,
+					vrDisplay.depthFar
+				);
+
+				vrControls = new THREE.VRControls(camera);
+			} else {
+				camera = new THREE.PerspectiveCamera(
+					45,
+					window.innerWidth / window.innerHeight,
+					0.05,
+					10000
+				);
+				vrControls = new THREE.OrbitControls(camera);
+				camera.updateProjectionMatrix();
+				camera.position.set( 0, 4.5, 10.5 );
+				vrControls.update();
+				scene.background = new THREE.Color( 0xff0505 );
+				var gridHelper = new THREE.GridHelper( 10, 10 );
+				scene.add( gridHelper );
+				// addModelDesktop();
+				addModelObj();
+			}
+
+			window.addEventListener('resize', onWindowResize, false);
+			update();
+		}
+		function update() {
+			// Clears color from the frame before rendering the camera (arView) or scene.
+			renderer.clearColor();
+			// Render the device's camera stream on screen first of all.
+			// It allows to get the right pose synchronized with the right frame.
+			if(arYes){
+				arView.render();
+			}
+			// Update our camera projection matrix in the event that
+			// the near or far planes have updated
+			camera.updateProjectionMatrix();
+			// Update our perspective camera's positioning
+			vrControls.update();
+
+			//do this once
+			if (!modelAdded && !camera.position.y) {
+				// addModel();
+			}
+			if(modelAdded) {
+				// mixer.update(clock.getDelta());
+			}
+
+			renderer.clearDepth();
+			renderer.render(scene, camera);
+
+			if(arYes) {
+				vrDisplay.requestAnimationFrame(update);
+			} else {
+				requestAnimationFrame(update);
+			}
+		}
+
+		function onWindowResize () {
+			camera.aspect = window.innerWidth / window.innerHeight;
+			camera.updateProjectionMatrix();
+			renderer.setSize(window.innerWidth, window.innerHeight);
+		}
+	</script>
+</body>
+</html>
