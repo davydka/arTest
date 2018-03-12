@@ -74,6 +74,9 @@
 	<script src="js/controls/VRControls.js"></script>
 	<script src="js/controls/OrbitControls.js"></script>
 	<script src="js/three.ar.js"></script>
+
+	<script src="js/libs/stats.min.js"></script>
+
 	<script src="js/loaders/GLTFLoader.js"></script>
 	<script src="js/loaders/ColladaLoader.js"></script>
 
@@ -208,6 +211,9 @@
 			document.body.appendChild(canvas);
 			scene = new THREE.Scene();
 
+			stats = new Stats();
+			document.body.appendChild( stats.dom );
+
 			directionalLight = new THREE.DirectionalLight();
 			directionalLight.intensity = 0.35;
 			directionalLight.position.set(5, 3, -.5);
@@ -312,6 +318,7 @@
 			renderer.clearDepth();
 			renderer.render(scene, camera);
 
+			stats.update();
 			if(arYes) {
 				vrDisplay.requestAnimationFrame(update);
 			} else {
