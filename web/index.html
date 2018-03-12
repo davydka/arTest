@@ -98,10 +98,10 @@
 		var loader = new THREE.OBJLoader2();
 		loader.getLogger().setDebug( true );
 		
-		loader.loadMtl("/Ten24_Sample_100k.mtl", null, function(materials){
+		loader.loadMtl("./Ten24_Sample_100k.mtl", null, function(materials){
 			loader.setModelName("Ten24_Sample_100k");
 			loader.setMaterials(materials);
-			loader.load( "/Ten24_Sample_100k.OBJ", function ( gltf ) {
+			loader.load( "./Ten24_Sample_100k.OBJ", function ( gltf ) {
 				// cam = gltf.cameras[0];
 				model = gltf;
 				console.log(gltf);
